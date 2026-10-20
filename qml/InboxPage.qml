@@ -9,10 +9,12 @@ import QtQuick 2.7
 import Lomiri.Components 1.3
 import Lomiri.Components.ListItems 1.3
 import "fonts.js" as Fonts
+import "i18n.js" as I18n
 
 Page {
     id: page
 
+    property string language: "en"
     property var messages
     property bool busy: false
     property bool configured: true
@@ -26,6 +28,10 @@ Page {
     signal composeRequested()
     signal trashRequested()
 
+    function tr(key) {
+        return I18n.t(language, key)
+    }
+
     function dateLabel(iso) {
         if (!iso)
             return ""
@@ -37,26 +43,26 @@ Page {
 
     header: SahkopostiHeader {
         id: header
-        title: "Saapuneet"
+        title: page.tr("inbox.title")
         trailingActionBar.actions: [
             Action {
                 iconName: "compose"
-                text: "Uusi viesti"
+                text: page.tr("inbox.new")
                 onTriggered: page.composeRequested()
             },
             Action {
                 iconName: "settings"
-                text: "Asetukset"
+                text: page.tr("inbox.settings")
                 onTriggered: page.settingsRequested()
             },
             Action {
                 iconName: "delete"
-                text: "Roskakori"
+                text: page.tr("inbox.trash")
                 onTriggered: page.trashRequested()
             },
             Action {
                 iconName: "reload"
-                text: "Päivitä"
+                text: page.tr("inbox.refresh")
                 enabled: !page.busy
                 onTriggered: page.refreshRequested()
             }
@@ -234,7 +240,7 @@ Page {
 
             Button {
                 anchors.centerIn: parent
-                text: "Näytä lisää"
+                text: page.tr("inbox.showMore")
                 enabled: !page.busy
                 onClicked: page.loadMoreRequested()
             }
@@ -256,8 +262,8 @@ Page {
             wrapMode: Text.WordWrap
             font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
             text: page.configured
-                  ? "Saapuneissa ei ole viestejä."
-                  : "Tiliä ei ole vielä määritetty."
+                  ? page.tr("inbox.empty")
+                  : page.tr("inbox.unconfigured")
         }
 
         Item {
@@ -267,7 +273,8 @@ Page {
             Button {
                 id: button
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: page.configured ? "Päivitä" : "Avaa asetukset"
+                text: page.configured ? page.tr("inbox.refresh")
+                                      : page.tr("inbox.openSettings")
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
                 onClicked: {
                     if (page.configured)

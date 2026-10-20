@@ -234,20 +234,33 @@ class FetchParsingTests(unittest.TestCase):
 
 
 class InboxListTests(unittest.TestCase):
+    def setUp(self):
+        self.language_directory = tempfile.mkdtemp(prefix="sahkoposti-language-")
+        self.previous_data_dir = os.environ.get("SAHKOPOSTI_DATA_DIR")
+        os.environ["SAHKOPOSTI_DATA_DIR"] = self.language_directory
+        mail.set_language("en")
+
+    def tearDown(self):
+        if self.previous_data_dir is None:
+            os.environ.pop("SAHKOPOSTI_DATA_DIR", None)
+        else:
+            os.environ["SAHKOPOSTI_DATA_DIR"] = self.previous_data_dir
+        shutil.rmtree(self.language_directory, ignore_errors=True)
+
     def test_server_text_is_shown_for_a_failed_login(self):
         error = imaplib.IMAP4.error(
             b"[AUTHENTICATIONFAILED] Authentication failed."
         )
         message = mail.login_failed_message(error)
-        self.assertIn("Kirjautuminen epäonnistui. Tarkista käyttäjätunnus "
-                      "ja salasana.", message)
+        self.assertIn("Login failed. Check the username and password.",
+                      message)
         self.assertIn("[AUTHENTICATIONFAILED]", message)
         self.assertNotIn("b'", message)
 
     def test_a_silent_server_keeps_the_short_message(self):
         self.assertEqual(
             mail.login_failed_message(imaplib.IMAP4.error()),
-            "Kirjautuminen epäonnistui. Tarkista käyttäjätunnus ja salasana.",
+            "Login failed. Check the username and password.",
         )
 
     def test_empty_mailbox_returns_no_messages(self):

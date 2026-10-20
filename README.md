@@ -2,7 +2,7 @@
 
 Sähke is a native mail client for Ubuntu Touch 24.04. It is written in QML
 and Python (PyOtherSide) and runs as a confined click. The user interface is
-in Finnish.
+available in English (default) and Finnish, selected in Settings.
 
 ## Features
 
@@ -12,7 +12,7 @@ in Finnish.
 - a local trash with restore; emptying the trash deletes the selected
   messages on the server only after a confirmation
 - two Revontuli themes (red and green), selected in Settings
-- Finnish UI, including dates, dialogs and error messages
+- English and Finnish UI, including dialogs and error messages
 
 ## Requirements
 
@@ -26,7 +26,7 @@ sudo apt install click python3
 ./tools/build.sh
 ```
 
-The package is written to `dist/fi.reijo.sahkoposti_0.3.2_all.click`.
+The package is written to `dist/fi.reijo.sahkoposti_0.4.0_all.click`.
 The build script uses the unpacked `click` tool from the Ubuntu archive if
 the system does not have one.
 
@@ -34,7 +34,7 @@ the system does not have one.
 
 ```sh
 click install --user phablet --allow-unauthenticated \
-  dist/fi.reijo.sahkoposti_0.3.2_all.click
+  dist/fi.reijo.sahkoposti_0.4.0_all.click
 ```
 
 The app is installed for the `phablet` user, like other Ubuntu Touch clicks.
@@ -54,8 +54,7 @@ device; deleting a message there does not change the server.
 
 - one account
 - no attachments open/save, search, offline cache, background
-  notifications, multiple accounts or translations yet
-- the UI is Finnish
+  notifications or multiple accounts yet
 - some providers do not offer IMAP; POP3 works when the provider supports it
 
 Sähke is an independent project and is not an official UBports application.

@@ -18,7 +18,9 @@ import base64
 import email
 import socketserver
 import os
+import shutil
 import sys
+import tempfile
 import threading
 import unittest
 
@@ -129,11 +131,20 @@ def _config(server, **overrides):
 
 class SendingTests(unittest.TestCase):
     def setUp(self):
+        self.language_directory = tempfile.mkdtemp(prefix="sahkoposti-language-")
+        self.previous_data_dir = os.environ.get("SAHKOPOSTI_DATA_DIR")
+        os.environ["SAHKOPOSTI_DATA_DIR"] = self.language_directory
+        mail.set_language("en")
         self.server = _start_server()
 
     def tearDown(self):
         self.server.shutdown()
         self.server.server_close()
+        if self.previous_data_dir is None:
+            os.environ.pop("SAHKOPOSTI_DATA_DIR", None)
+        else:
+            os.environ["SAHKOPOSTI_DATA_DIR"] = self.previous_data_dir
+        shutil.rmtree(self.language_directory, ignore_errors=True)
 
     def test_message_reaches_the_server_with_headers_and_utf8_body(self):
         message = mail.smtp_send(
@@ -180,27 +191,27 @@ class SendingTests(unittest.TestCase):
     def test_missing_recipient_is_an_honest_error(self):
         with self.assertRaises(mail.MailError) as caught:
             mail.smtp_send(_config(self.server), "", "Aihe", "Runko")
-        self.assertIn("vastaanottajan", str(caught.exception))
+        self.assertIn("recipient", str(caught.exception).lower())
         self.assertIsNone(self.server.message)
 
     def test_missing_password_is_an_honest_error(self):
         with self.assertRaises(mail.MailError) as caught:
             mail.smtp_send(_config(self.server, password=""),
                            "friend@example.org", "Aihe", "Runko")
-        self.assertIn("Salasana", str(caught.exception))
+        self.assertIn("password", str(caught.exception).lower())
 
     def test_missing_account_is_an_honest_error(self):
         with self.assertRaises(mail.MailError) as caught:
             mail.smtp_send(_config(self.server, host="", username=""),
                            "friend@example.org", "Aihe", "Runko")
-        self.assertIn("Asetukset", str(caught.exception))
+        self.assertIn("Open Settings", str(caught.exception))
 
     def test_refused_credentials_say_so(self):
         server = _start_server(accept_auth=False)
         try:
             with self.assertRaises(mail.MailError) as caught:
                 mail.smtp_send(_config(server), "friend@example.org", "Aihe", "Runko")
-            self.assertIn("Kirjautuminen epäonnistui", str(caught.exception))
+            self.assertIn("Login failed", str(caught.exception))
         finally:
             server.shutdown()
             server.server_close()

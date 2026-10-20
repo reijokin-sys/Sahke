@@ -188,6 +188,10 @@ def test_context():
 
 class SocketTests(unittest.TestCase):
     def setUp(self):
+        self.language_directory = tempfile.mkdtemp(prefix="sahkoposti-language-")
+        self.previous_data_dir = os.environ.get("SAHKOPOSTI_DATA_DIR")
+        os.environ["SAHKOPOSTI_DATA_DIR"] = self.language_directory
+        mail.set_language("en")
         self.server = FakeImapServer().start()
         self.config = {
             "host": "127.0.0.1",
@@ -199,6 +203,11 @@ class SocketTests(unittest.TestCase):
 
     def tearDown(self):
         self.server.stop()
+        if self.previous_data_dir is None:
+            os.environ.pop("SAHKOPOSTI_DATA_DIR", None)
+        else:
+            os.environ["SAHKOPOSTI_DATA_DIR"] = self.previous_data_dir
+        shutil.rmtree(self.language_directory, ignore_errors=True)
 
     def factory(self, config):
         # The factory must honour the config it is handed; otherwise the
@@ -238,13 +247,13 @@ class SocketTests(unittest.TestCase):
         config = dict(self.config, password="wrong-on-purpose")
         with self.assertRaises(mail.MailError) as caught:
             mail.imap_inbox_list(config, 5, client_factory=self.factory)
-        self.assertIn("Kirjautuminen epäonnistui", str(caught.exception))
+        self.assertIn("Login failed", str(caught.exception))
 
     def test_unreachable_port_is_reported_cleanly(self):
         config = dict(self.config, port=1)
         with self.assertRaises(mail.MailError) as caught:
             mail.imap_inbox_list(config, 5, client_factory=self.factory)
-        self.assertIn("Yhteys osoitteeseen", str(caught.exception))
+        self.assertIn("Connection to", str(caught.exception))
 
 
 if __name__ == "__main__":

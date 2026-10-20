@@ -9,15 +9,21 @@ import QtQuick 2.7
 import Lomiri.Components 1.3
 import Lomiri.Components.ListItems 1.3
 import "fonts.js" as Fonts
+import "i18n.js" as I18n
 
 Page {
     id: page
 
+    property string language: "en"
     // The messages this app has deleted. They are still in the mailbox.
     property var messages
 
     signal messageActivated(int index)
     signal emptyRequested()
+
+    function tr(key) {
+        return I18n.t(language, key)
+    }
 
     function dateLabel(iso) {
         if (!iso)
@@ -30,11 +36,11 @@ Page {
 
     header: SahkopostiHeader {
         id: header
-        title: "Roskakori"
+        title: page.tr("trash.title")
         trailingActionBar.actions: [
             Action {
                 iconName: "delete"
-                text: "Tyhjennä roskakori"
+                text: page.tr("trash.emptyAction")
                 // A real boolean: before the list arrives `messages` is
                 // undefined, and the old form handed that to `enabled`.
                 enabled: (page.messages ? page.messages.count : 0) > 0
@@ -62,7 +68,7 @@ Page {
                 id: layout
                 title.text: model.subject && model.subject.length > 0
                             ? model.subject
-                            : "(ei aihetta)"
+                            : page.tr("trash.noSubject")
                 title.font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
                 subtitle.text: model.from
                 subtitle.font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("small"))
@@ -81,7 +87,7 @@ Page {
             visible: listView.count === 0
             opacity: 0.7
             font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
-            text: "Roskakori on tyhjä."
+            text: page.tr("trash.empty")
         }
     }
 
@@ -97,7 +103,6 @@ Page {
         wrapMode: Text.WordWrap
         font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("small"))
         opacity: 0.7
-        text: "Nämä viestit on vain piilotettu tässä sovelluksessa - "
-              + "postilaatikkoa ei muuteta. Avaa viesti palauttaaksesi sen."
+        text: page.tr("trash.hint")
     }
 }

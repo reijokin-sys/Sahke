@@ -8,10 +8,12 @@
 import QtQuick 2.7
 import Lomiri.Components 1.3
 import "fonts.js" as Fonts
+import "i18n.js" as I18n
 
 Page {
     id: page
 
+    property string language: "en"
     property string to: ""
     property string subject: ""
     property string body: ""
@@ -22,9 +24,15 @@ Page {
 
     signal sendRequested(string to, string subject, string body, string replyTo)
 
+    function tr(key) {
+        return I18n.t(language, key)
+    }
+
     header: SahkopostiHeader {
         id: header
-        title: page.replyTo.length > 0 ? "Vastaa" : "Uusi viesti"
+        title: page.replyTo.length > 0
+               ? page.tr("compose.replyTitle")
+               : page.tr("compose.newTitle")
     }
 
     Flickable {
@@ -47,20 +55,20 @@ Page {
             spacing: units.gu(1)
 
             Label {
-                text: "Vastaanottaja"
+                text: page.tr("compose.to")
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
             }
             TextField {
                 id: toField
                 width: parent.width
                 text: page.to
-                placeholderText: "nimi@esimerkki.fi"
+                placeholderText: page.tr("compose.toPlaceholder")
                 inputMethodHints: Qt.ImhEmailCharactersOnly | Qt.ImhNoAutoUppercase
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
             }
 
             Label {
-                text: "Aihe"
+                text: page.tr("compose.subject")
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
             }
             TextField {
@@ -71,7 +79,7 @@ Page {
             }
 
             Label {
-                text: "Viesti"
+                text: page.tr("compose.body")
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
             }
             TextArea {
@@ -84,7 +92,8 @@ Page {
 
             Button {
                 width: parent.width
-                text: page.busy ? "Lähetetään…" : "Lähetä"
+                text: page.busy ? page.tr("compose.sending")
+                                : page.tr("compose.send")
                 color: theme.palette.normal.positive
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
                 enabled: page.canSend
@@ -97,7 +106,7 @@ Page {
             Label {
                 width: parent.width
                 visible: page.busy
-                text: "Yhdistetään lähettävään palvelimeen…"
+                text: page.tr("compose.connecting")
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("small"))
                 wrapMode: Text.WordWrap
             }

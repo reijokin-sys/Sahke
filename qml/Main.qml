@@ -11,6 +11,7 @@ import Lomiri.Components.Popups 1.3
 import io.thp.pyotherside 1.5
 import "fonts.js" as Fonts
 import "theme.js" as Themejs
+import "i18n.js" as I18n
 import Qt.labs.settings 1.0
 
 MainView {
@@ -25,6 +26,7 @@ MainView {
 
     property bool busy: false
     property bool pythonReady: false
+    property string language: "en"
     property bool configured: false
     // The theme the user chose: "punainen" or "vihrea". Sähke has its
     // own two themes and does not follow the phone's.
@@ -55,6 +57,23 @@ MainView {
     // The message just swiped into the trash; the notice bar offers Undo.
     property string undoUid: ""
 
+    function tr(key) {
+        return I18n.t(language, key)
+    }
+
+    function setLanguage(code) {
+        if (code !== "en" && code !== "fi")
+            return
+        root.language = code
+        console.log("Sähke: language: " + code)
+        if (root.pythonReady) {
+            python.call("mail.set_language", [code], function (result) {
+                if (result && result.ok)
+                    root.language = result.result
+            })
+        }
+    }
+
     function showError(message) {
         if (!message)
             return
@@ -63,7 +82,9 @@ MainView {
     }
 
     function countText(count) {
-        return count === 1 ? "1 viesti" : count + " viestiä"
+        if (count === 1)
+            return root.tr("count.one")
+        return root.tr("count.many").replace("%1", count)
     }
 
     /// Set the toolkit theme to one of ours and keep it there. The modules
@@ -206,7 +227,7 @@ MainView {
             if (result && result.ok) {
                 if (pageStack.depth > 1)
                     pageStack.pop()
-                root.notice = "Siirretty roskakoriin."
+                root.notice = root.tr("notice.trashed")
                 root.undoUid = offerUndo === true ? String(message.uid) : ""
                 noticeTimer.restart()
                 root.refresh()
@@ -223,7 +244,7 @@ MainView {
         python.call("mail.restore_message", [uid], function (result) {
             root.busy = false
             if (result && result.ok) {
-                root.notice = "Palautettu saapuneisiin."
+                root.notice = root.tr("notice.restored")
                 noticeTimer.restart()
                 root.refresh()
             }
@@ -242,7 +263,7 @@ MainView {
                     pageStack.pop()
                 if (result.messages)
                     root.fillTrash(result.messages)
-                root.notice = "Palautettu saapuneisiin."
+                root.notice = root.tr("notice.restored")
                 noticeTimer.restart()
                 root.refresh()
             }
@@ -265,9 +286,9 @@ MainView {
                 if (result.messages)
                     root.fillTrash(result.messages)
                 root.notice = (result.deleted && result.deleted.length > 0)
-                              ? root.countText(result.deleted.length)
-                                + " poistettu palvelimelta."
-                              : "Roskakori oli jo tyhjä palvelimella."
+                              ? root.tr("notice.deleted").replace(
+                                    "%1", root.countText(result.deleted.length))
+                              : root.tr("notice.trashAlreadyEmpty")
                 noticeTimer.restart()
                 root.refresh()
             }
@@ -304,8 +325,9 @@ MainView {
         if (!message)
             return
         var subject = message.subject ? String(message.subject) : ""
-        if (subject.substring(0, 3).toLowerCase() !== "re:")
-            subject = "Vast: " + subject
+        var lower = subject.substring(0, 5).toLowerCase()
+        if (lower.indexOf("re:") !== 0 && lower.indexOf("vast:") !== 0)
+            subject = root.tr("reply.prefix") + subject
         root.openCompose(message.from ? String(message.from) : "", subject, "",
                          message.message_id ? String(message.message_id) : "")
     }
@@ -325,7 +347,12 @@ MainView {
             addImportPath(Qt.resolvedUrl("../"))
             importModule("mail", function () {
                 root.pythonReady = true
-                python.call("mail.load_config", [], function () {})
+                python.call("mail.language", [], function (result) {
+                    if (result && result.ok && result.result)
+                        root.language = result.result
+                    console.log("Sähke: language: " + root.language)
+                    python.call("mail.load_config", [], function () {})
+                })
             })
         }
 
@@ -374,7 +401,7 @@ MainView {
                     root.composing = false
                     pageStack.pop()
                 }
-                root.notice = "Viesti lähetetty."
+                root.notice = root.tr("notice.sent")
                 noticeTimer.restart()
             }
         }
@@ -417,6 +444,7 @@ MainView {
     Component {
         id: inboxPage
         InboxPage {
+            language: root.language
             messages: messageModel
             busy: root.busy
             configured: root.configured
@@ -435,6 +463,7 @@ MainView {
     Component {
         id: messagePage
         MessagePage {
+            language: root.language
             onReplyRequested: root.replyToMessage(message)
             onDeleteRequested: root.askDelete(message)
             onRestoreRequested: root.restoreMessage(message.uid)
@@ -444,6 +473,7 @@ MainView {
     Component {
         id: trashPage
         TrashPage {
+            language: root.language
             messages: trashModel
             onMessageActivated: root.openMessage(trashModel.get(index).uid, true)
             onEmptyRequested: root.askEmptyTrash()
@@ -453,6 +483,7 @@ MainView {
     Component {
         id: composePage
         ComposePage {
+            language: root.language
             busy: root.busy
             onSendRequested: root.sendMessage(to, subject, body, replyTo)
         }
@@ -461,7 +492,9 @@ MainView {
     Component {
         id: settingsPage
         SettingsPage {
+            language: root.language
             themeKey: root.themeKey
+            onLanguageRequested: root.setLanguage(code)
             onThemeRequested: root.setTheme(key)
             onSaveRequested: root.saveSettings(host, port, security, username,
                                                password, protocol, smtpHost,
@@ -473,10 +506,10 @@ MainView {
         id: errorDialog
             Dialog {
                 id: dialog
-                title: "Sähke"
+                title: root.tr("app.title")
 
                 Button {
-                    text: "Sulje"
+                    text: root.tr("dialog.close")
                     color: theme.palette.normal.positive
                     font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
                     onClicked: PopupUtils.close(dialog)
@@ -489,19 +522,16 @@ MainView {
         Dialog {
             id: dialog
             property var message: ({})
-            title: "Siirretäänkö roskakoriin?"
-            text: "Viesti poistuu saapuneiden listalta ja odottaa tämän "
-                  + "sovelluksen roskakorissa, josta sen voi palauttaa. "
-                  + "Postilaatikkoa ei muuteta eikä palvelimelta poisteta "
-                  + "mitään."
+            title: root.tr("dialog.delete.title")
+            text: root.tr("dialog.delete.text")
 
             Button {
-                text: "Peruuta"
+                text: root.tr("dialog.delete.cancel")
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
                 onClicked: PopupUtils.close(dialog)
             }
             Button {
-                text: "Siirrä roskakoriin"
+                text: root.tr("dialog.delete.confirm")
                 color: theme.palette.normal.negative
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
                 onClicked: {
@@ -517,18 +547,17 @@ MainView {
         Dialog {
             id: dialog
             property int count: 0
-            title: "Tyhjennetäänkö roskakori?"
-            text: root.countText(count) + " poistetaan palvelimelta pysyvästi. "
-                  + "Tätä ei voi kumota, ja viestit katoavat myös muista "
-                  + "sähköpostiohjelmista."
+            title: root.tr("dialog.empty.title")
+            text: root.tr("dialog.empty.text").replace("%1",
+                                                       root.countText(count))
 
             Button {
-                text: "Peruuta"
+                text: root.tr("dialog.empty.cancel")
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
                 onClicked: PopupUtils.close(dialog)
             }
             Button {
-                text: "Poista pysyvästi"
+                text: root.tr("dialog.empty.confirm")
                 color: theme.palette.normal.negative
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
                 onClicked: {
@@ -564,7 +593,7 @@ MainView {
 
             Button {
                 anchors.verticalCenter: parent.verticalCenter
-                text: "Kumoa"
+                text: root.tr("common.undo")
                 visible: root.undoUid.length > 0
                 color: "white"
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))

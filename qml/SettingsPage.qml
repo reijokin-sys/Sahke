@@ -8,10 +8,14 @@
 import QtQuick 2.7
 import Lomiri.Components 1.3
 import "fonts.js" as Fonts
+import "i18n.js" as I18n
 
 Page {
     id: page
 
+    Component.onCompleted: console.log("Sähke: settings page")
+
+    property string language: "en"
     property var config
     /// "punainen" or "vihrea": Sähke's own theme, not the phone's.
     property string themeKey: "punainen"
@@ -19,11 +23,16 @@ Page {
     signal saveRequested(var host, var port, var security, var username,
                          var password, var protocol, var smtpHost,
                          var smtpPort, var smtpSecurity)
+    signal languageRequested(string code)
     signal themeRequested(string key)
+
+    function tr(key) {
+        return I18n.t(language, key)
+    }
 
     header: SahkopostiHeader {
         id: header
-        title: "Asetukset"
+        title: page.tr("settings.title")
     }
 
     function defaultPort(protocol, security) {
@@ -89,7 +98,27 @@ Page {
             spacing: units.gu(2)
 
             Label {
-                text: "Teema"
+                text: page.tr("settings.language")
+                font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("large"))
+            }
+
+            OptionSelector {
+                id: languageSelector
+                width: parent.width
+                expanded: false
+                model: [page.tr("settings.languageEnglish"),
+                        page.tr("settings.languageFinnish")]
+                selectedIndex: page.language === "fi" ? 1 : 0
+                onSelectedIndexChanged: {
+                    var code = selectedIndex === 1 ? "fi" : "en"
+                    console.log("Sähke: language selector index: " + selectedIndex)
+                    if (code !== page.language)
+                        page.languageRequested(code)
+                }
+            }
+
+            Label {
+                text: page.tr("settings.theme")
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("large"))
             }
 
@@ -97,7 +126,8 @@ Page {
                 id: themeSelector
                 width: parent.width
                 expanded: false
-                model: ["Revontuli punainen", "Revontuli vihreä"]
+                model: [page.tr("settings.themeRed"),
+                        page.tr("settings.themeGreen")]
                 selectedIndex: page.themeKey === "vihrea" ? 1 : 0
                 onSelectedIndexChanged: {
                     var key = selectedIndex === 1 ? "vihrea" : "punainen"
@@ -111,19 +141,18 @@ Page {
                 wrapMode: Text.WordWrap
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("small"))
                 opacity: 0.7
-                text: "Sähkeellä on omat värinsä - puhelimen teema ei "
-                      + "muuta niitä."
+                text: page.tr("settings.themeNote")
             }
 
             Label {
-                text: "Tili"
+                text: page.tr("settings.account")
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("large"))
             }
 
             TextField {
                 id: hostField
                 width: parent.width
-                placeholderText: "IMAP-palvelin, esim. imap.esimerkki.fi"
+                placeholderText: page.tr("settings.hostPlaceholder")
                 text: page.currentField("host", "")
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
             }
@@ -131,7 +160,7 @@ Page {
             TextField {
                 id: userField
                 width: parent.width
-                placeholderText: "Käyttäjätunnus"
+                placeholderText: page.tr("settings.username")
                 text: page.currentField("username", "")
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
@@ -141,8 +170,8 @@ Page {
                 id: passwordField
                 width: parent.width
                 placeholderText: page.config && page.config.has_password
-                               ? "Salasana (ei muutettu)"
-                               : "Salasana"
+                               ? page.tr("settings.passwordUnchanged")
+                               : page.tr("settings.password")
                 echoMode: showPassword.checked ? TextInput.Normal
                                                : TextInput.Password
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
@@ -151,12 +180,12 @@ Page {
 
             CheckBox {
                 id: showPassword
-                text: "Näytä salasana"
+                text: page.tr("settings.showPassword")
                 checked: false
             }
 
             Label {
-                text: "Protokolla"
+                text: page.tr("settings.protocol")
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
             }
 
@@ -175,9 +204,7 @@ Page {
                 wrapMode: Text.WordWrap
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("small"))
                 opacity: 0.7
-                text: "Jätä salasana tyhjäksi, jos haluat säilyttää "
-                      + "tallennetun. Rastita \"Näytä salasana\", jos haluat "
-                      + "tarkistaa kirjoittamasi."
+                text: page.tr("settings.passwordHint")
             }
 
             TextField {
@@ -192,7 +219,7 @@ Page {
             }
 
             Label {
-                text: "Yhteyden suojaus"
+                text: page.tr("settings.security")
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
             }
 
@@ -207,7 +234,7 @@ Page {
             }
 
             Label {
-                text: "Lähettävä palvelin"
+                text: page.tr("settings.smtpServer")
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("large"))
             }
 
@@ -216,7 +243,7 @@ Page {
                 width: parent.width
                 placeholderText: hostField.text.length > 0
                                ? hostField.text
-                               : "Sama kuin saapuva palvelin"
+                               : page.tr("settings.smtpSameAsIncoming")
                 text: page.smtpHostValue()
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
             }
@@ -226,12 +253,11 @@ Page {
                 wrapMode: Text.WordWrap
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("small"))
                 opacity: 0.7
-                text: "Jätä tyhjäksi, jos käytät saapuvaa palvelinta, tai "
-                      + "kirjoita toinen palvelin."
+                text: page.tr("settings.smtpHint")
             }
 
             Label {
-                text: "Yhteyden suojaus"
+                text: page.tr("settings.security")
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
             }
 
@@ -239,7 +265,7 @@ Page {
                 id: smtpSecuritySelector
                 width: parent.width
                 expanded: false
-                model: ["SSL/TLS", "STARTTLS", "Ei salausta"]
+                model: ["SSL/TLS", "STARTTLS", page.tr("settings.noEncryption")]
                 selectedIndex: {
                     var value = page.currentField("smtp_security", "ssl")
                     if (value === "starttls")
@@ -268,8 +294,7 @@ Page {
                 wrapMode: Text.WordWrap
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("small"))
                 opacity: 0.7
-                text: "Oletusportit: 465 (SSL/TLS), 587 (STARTTLS), "
-                      + "25 (Ei salausta)."
+                text: page.tr("settings.smtpDefaultPorts")
             }
 
             Item {
@@ -279,7 +304,7 @@ Page {
                 Button {
                     id: saveButton
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: "Tallenna ja päivitä"
+                    text: page.tr("settings.save")
                     color: theme.palette.normal.positive
                     font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
                     enabled: hostField.text.length > 0
@@ -304,14 +329,11 @@ Page {
                 wrapMode: Text.WordWrap
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("small"))
                 opacity: 0.7
-                text: "Asetukset ovat tämän sovelluksen omassa "
-                      + "datakansiossa (tiedoston oikeudet 0600). "
+                text: page.tr("settings.footer.base")
                       + (page.config && page.config.password_location === "keyring"
-                         ? "Salasana säilytetään järjestelmän avainrenkaassa. "
-                         : "Salasana säilytetään tämän sovelluksen omassa "
-                           + "tiedostossa. ")
-                      + "Tilillä ei muuteta mitään eikä viestejä merkitä "
-                      + "luetuiksi."
+                         ? page.tr("settings.footer.keyring")
+                         : page.tr("settings.footer.file"))
+                      + page.tr("settings.footer.end")
             }
         }
     }

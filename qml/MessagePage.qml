@@ -8,10 +8,12 @@
 import QtQuick 2.7
 import Lomiri.Components 1.3
 import "fonts.js" as Fonts
+import "i18n.js" as I18n
 
 Page {
     id: page
 
+    property string language: "en"
     property var message: ({})
     // True when the message was opened from the trash, where the action is
     // "put it back" instead of "delete".
@@ -20,6 +22,10 @@ Page {
     signal replyRequested()
     signal deleteRequested()
     signal restoreRequested()
+
+    function tr(key) {
+        return I18n.t(language, key)
+    }
 
     function dateLabel(iso) {
         if (!iso)
@@ -35,21 +41,21 @@ Page {
     Action {
         id: replyAction
         iconName: "mail-reply"
-        text: "Vastaa"
+        text: page.tr("message.reply")
         onTriggered: page.replyRequested()
     }
 
     Action {
         id: deleteAction
         iconName: "delete"
-        text: "Poista"
+        text: page.tr("message.delete")
         onTriggered: page.deleteRequested()
     }
 
     Action {
         id: restoreAction
         iconName: "undo"
-        text: "Palauta"
+        text: page.tr("message.restore")
         onTriggered: page.restoreRequested()
     }
 
@@ -57,7 +63,7 @@ Page {
         id: header
         title: page.message.subject && page.message.subject.length > 0
                ? page.message.subject
-               : "(ei aihetta)"
+               : page.tr("message.noSubject")
         // In the trash the only action is "put it back".
         trailingActionBar.actions: page.inTrash
                                    ? [restoreAction]
@@ -91,14 +97,14 @@ Page {
                 width: parent.width
                 text: page.message.subject && page.message.subject.length > 0
                       ? page.message.subject
-                      : "(ei aihetta)"
+                      : page.tr("message.noSubject")
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("large"))
                 wrapMode: Text.WordWrap
             }
 
             Label {
                 width: parent.width
-                text: page.detail("Lähettäjä", page.message.from)
+                text: page.detail(page.tr("message.from"), page.message.from)
                 wrapMode: Text.WordWrap
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
             }
@@ -106,7 +112,7 @@ Page {
             Label {
                 width: parent.width
                 visible: text.length > 0
-                text: page.detail("Vastaanottaja", page.message.to)
+                text: page.detail(page.tr("message.to"), page.message.to)
                 wrapMode: Text.WordWrap
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
             }
@@ -114,14 +120,15 @@ Page {
             Label {
                 width: parent.width
                 visible: text.length > 0
-                text: page.detail("Kopio", page.message.cc)
+                text: page.detail(page.tr("message.cc"), page.message.cc)
                 wrapMode: Text.WordWrap
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
             }
 
             Label {
                 width: parent.width
-                text: page.detail("Päiväys", page.dateLabel(page.message.date))
+                text: page.detail(page.tr("message.date"),
+                                  page.dateLabel(page.message.date))
                 wrapMode: Text.WordWrap
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
             }
@@ -138,7 +145,7 @@ Page {
                 textFormat: Text.PlainText
                 text: page.message.text && page.message.text.length > 0
                       ? page.message.text
-                      : "(Tässä viestissä ei ole luettavaa tekstiosaa.)"
+                      : page.tr("message.noText")
                 font.pixelSize: Fonts.message(FontUtils.sizeToPixels("medium"))
             }
 
@@ -149,7 +156,8 @@ Page {
                 visible: (page.message.attachments || []).length > 0
                 wrapMode: Text.WordWrap
                 text: page.message.attachments
-                      ? "Liitteet: " + page.message.attachments.join(", ")
+                      ? page.tr("message.attachments")
+                        + page.message.attachments.join(", ")
                       : ""
                 font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("small"))
             }

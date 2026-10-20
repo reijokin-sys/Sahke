@@ -58,6 +58,71 @@ PROTOCOLS = ("imap", "pop3")
 CONNECT_TIMEOUT = 30
 SECURITIES = ("ssl", "starttls")
 SMTP_SECURITIES = ("ssl", "starttls", "plain")
+LANGUAGES = ("en", "fi")
+DEFAULT_LANGUAGE = "en"
+
+MESSAGES = {
+    "en": {
+        "not_configured": "The account is not configured. Open Settings and fill in the server details.",
+        "login_failed": "Login failed. Check the username and password.",
+        "login_failed_server": "Login failed. Check the username and password.\nServer said: %(server)s",
+        "tls_error": "TLS error connecting to %(host)s: %(error)s",
+        "connection_failed": "Connection to %(host)s:%(port)s failed (%(error)s)",
+        "connection_lost_login": "The connection was lost during login: %(error)s",
+        "inbox_open_failed": "The Inbox folder could not be opened.",
+        "inbox_open_write_failed": "The Inbox folder could not be opened for writing.",
+        "list_failed": "The message list could not be read.",
+        "fetch_failed": "The message could not be fetched.",
+        "message_missing_inbox": "The message was not found in the Inbox.",
+        "message_missing_mailbox": "The message was not found in the mailbox.",
+        "delete_failed": "Deleting the messages from the server failed.",
+        "smtp_not_configured": "The sending server is not configured. Open Settings.",
+        "smtp_timeout": "Connection to %(host)s:%(port)s timed out.",
+        "smtp_tls_error": "Secure connection to %(host)s:%(port)s failed (%(error)s).",
+        "smtp_connection_failed": "Connection to %(host)s:%(port)s failed (%(error)s).",
+        "send_not_configured": "The account is not configured. Open Settings first.",
+        "recipient_required": "Enter the recipient's address.",
+        "password_missing": "The password is missing. Open Settings and save it.",
+        "recipient_rejected": "The server rejected the recipient address: %(addresses)s",
+        "sender_rejected": "The server rejected the sender address.\nServer said: %(server)s",
+        "message_rejected": "The server rejected the message.\nServer said: %(server)s",
+        "settings_save_failed": "The settings could not be saved: %(error)s",
+        "unexpected_error": "Unexpected error: %(error)s",
+        "trash_no_uid": "The message has no identifier.",
+        "trash_save_failed": "The trash could not be saved: %(error)s",
+        "trash_update_failed": "The messages were deleted, but the trash could not be updated: %(error)s",
+    },
+    "fi": {
+        "not_configured": "Tiliä ei ole vielä määritetty. Avaa Asetukset ja täytä palvelimen tiedot.",
+        "login_failed": "Kirjautuminen epäonnistui. Tarkista käyttäjätunnus ja salasana.",
+        "login_failed_server": "Kirjautuminen epäonnistui. Tarkista käyttäjätunnus ja salasana.\nPalvelin sanoi: %(server)s",
+        "tls_error": "TLS-virhe yhdistettäessä osoitteeseen %(host)s: %(error)s",
+        "connection_failed": "Yhteys osoitteeseen %(host)s:%(port)s epäonnistui (%(error)s)",
+        "connection_lost_login": "Yhteys katkesi kirjautumisen aikana: %(error)s",
+        "inbox_open_failed": "Saapuneet-kansiota ei voitu avata.",
+        "inbox_open_write_failed": "Saapuneet-kansiota ei voitu avata kirjoittamista varten.",
+        "list_failed": "Viestiluetteloa ei voitu lukea.",
+        "fetch_failed": "Viestiä ei voitu hakea.",
+        "message_missing_inbox": "Viestiä ei löytynyt Saapuneet-kansiosta.",
+        "message_missing_mailbox": "Viestiä ei löytynyt postilaatikosta.",
+        "delete_failed": "Viestien poistaminen palvelimelta epäonnistui.",
+        "smtp_not_configured": "Lähettävää palvelinta ei ole asetettu. Avaa Asetukset.",
+        "smtp_timeout": "Yhteys osoitteeseen %(host)s:%(port)s aikakatkaistiin.",
+        "smtp_tls_error": "Suojattu yhteys osoitteeseen %(host)s:%(port)s epäonnistui (%(error)s).",
+        "smtp_connection_failed": "Yhteys osoitteeseen %(host)s:%(port)s epäonnistui (%(error)s).",
+        "send_not_configured": "Tiliä ei ole vielä määritetty. Avaa ensin Asetukset.",
+        "recipient_required": "Anna vastaanottajan osoite.",
+        "password_missing": "Salasana puuttuu. Avaa Asetukset ja tallenna se.",
+        "recipient_rejected": "Palvelin hylkäsi vastaanottajan osoitteen: %(addresses)s",
+        "sender_rejected": "Palvelin hylkäsi lähettäjän osoitteen.\nPalvelin sanoi: %(server)s",
+        "message_rejected": "Palvelin hylkäsi viestin.\nPalvelin sanoi: %(server)s",
+        "settings_save_failed": "Asetuksia ei voitu tallentaa: %(error)s",
+        "unexpected_error": "Odottamaton virhe: %(error)s",
+        "trash_no_uid": "Viestillä ei ole tunnistetta.",
+        "trash_save_failed": "Roskakoria ei voitu tallentaa: %(error)s",
+        "trash_update_failed": "Viestit poistettiin, mutta roskakoria ei voitu päivittää: %(error)s",
+    },
+}
 
 
 def default_port(protocol, security):
@@ -103,10 +168,8 @@ def login_failed_message(error):
     """Say what the server said, so a wrong password is not a dead end."""
     said = server_text(error)
     if not said:
-        return "Kirjautuminen epäonnistui. Tarkista käyttäjätunnus ja salasana."
-    return ("Kirjautuminen epäonnistui. Tarkista käyttäjätunnus ja salasana."
-            "\nPalvelin sanoi: %s"
-            % said)
+        return _t("login_failed")
+    return _t("login_failed_server", server=said)
 
 
 # --------------------------------------------------------------------------
@@ -130,6 +193,60 @@ def data_dir():
         return xdg
     base = xdg or os.path.join(os.path.expanduser("~"), ".local", "share")
     return os.path.join(base, APP_ID)
+
+
+def language_path():
+    return os.path.join(data_dir(), "language")
+
+
+def _language_code():
+    try:
+        with open(language_path(), "r", encoding="utf-8") as handle:
+            choice = handle.read().strip()
+    except OSError:
+        choice = ""
+    return choice if choice in LANGUAGES else DEFAULT_LANGUAGE
+
+
+def language():
+    """The user's UI language: English unless Finnish was chosen."""
+    return {"ok": True, "result": _language_code()}
+
+
+def set_language(value):
+    """Remember the user's UI language choice."""
+    choice = str(value or "").strip()
+    if choice not in LANGUAGES:
+        return {
+            "ok": False,
+            "error": {
+                "code": "language",
+                "message": "unsupported language: %s" % choice,
+            },
+        }
+    try:
+        directory = data_dir()
+        os.makedirs(directory, mode=0o700, exist_ok=True)
+        path = language_path()
+        temporary = path + ".tmp"
+        handle = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(handle, "w", encoding="utf-8") as stream:
+            stream.write(choice + "\n")
+        os.replace(temporary, path)
+        os.chmod(path, 0o600)
+    except OSError as error:
+        return {
+            "ok": False,
+            "error": {"code": "language", "message": str(error)},
+        }
+    return {"ok": True, "result": choice}
+
+
+def _t(key, **values):
+    """Translate one backend message into the selected language."""
+    table = MESSAGES.get(_language_code(), MESSAGES[DEFAULT_LANGUAGE])
+    template = table.get(key, MESSAGES[DEFAULT_LANGUAGE].get(key, key))
+    return template % values if values else template
 
 
 def config_path():
@@ -534,10 +651,7 @@ class ImapClient(object):
     def connect(self):
         host = (self.config.get("host") or "").strip()
         if not host:
-            raise MailError(
-                "Tiliä ei ole vielä määritetty. Avaa Asetukset ja täytä "
-                "palvelimen tiedot."
-            )
+            raise MailError(_t("not_configured"))
         security = (self.config.get("security") or "ssl").strip().lower()
         if security not in SECURITIES:
             security = "ssl"
@@ -556,13 +670,10 @@ class ImapClient(object):
                     host, port, ssl_context=context, timeout=self.timeout
                 )
         except ssl.SSLError as error:
-            raise MailError("TLS-virhe yhdistettäessä osoitteeseen %s: %s"
-                            % (host, error))
+            raise MailError(_t("tls_error", host=host, error=error))
         except (OSError, imaplib.IMAP4.error) as error:
-            raise MailError(
-                "Yhteys osoitteeseen %s:%s epäonnistui (%s)"
-                % (host, port, error)
-            )
+            raise MailError(_t("connection_failed", host=host, port=port,
+                               error=error))
         try:
             connection.login(username, password)
         except imaplib.IMAP4.error as error:
@@ -570,7 +681,7 @@ class ImapClient(object):
             raise MailError(login_failed_message(error))
         except (OSError, ssl.SSLError) as error:
             self.close(connection)
-            raise MailError("Yhteys katkesi kirjautumisen aikana: %s" % error)
+            raise MailError(_t("connection_lost_login", error=error))
         return connection
 
     @staticmethod
@@ -597,10 +708,7 @@ class Pop3Client(object):
     def connect(self):
         host = (self.config.get("host") or "").strip()
         if not host:
-            raise MailError(
-                "Tiliä ei ole vielä määritetty. Avaa Asetukset ja täytä "
-                "palvelimen tiedot."
-            )
+            raise MailError(_t("not_configured"))
         security = (self.config.get("security") or "ssl").strip().lower()
         if security not in SECURITIES:
             security = "ssl"
@@ -617,13 +725,10 @@ class Pop3Client(object):
                     host, port, context=context, timeout=self.timeout
                 )
         except ssl.SSLError as error:
-            raise MailError("TLS-virhe yhdistettäessä osoitteeseen %s: %s"
-                            % (host, error))
+            raise MailError(_t("tls_error", host=host, error=error))
         except (OSError, poplib.error_proto) as error:
-            raise MailError(
-                "Yhteys osoitteeseen %s:%s epäonnistui (%s)"
-                % (host, port, error)
-            )
+            raise MailError(_t("connection_failed", host=host, port=port,
+                               error=error))
         try:
             connection.user(username)
             connection.pass_(password)
@@ -632,7 +737,7 @@ class Pop3Client(object):
             raise MailError(login_failed_message(error))
         except (OSError, ssl.SSLError) as error:
             self.close(connection)
-            raise MailError("Yhteys katkesi kirjautumisen aikana: %s" % error)
+            raise MailError(_t("connection_lost_login", error=error))
         return connection
 
     @staticmethod
@@ -686,7 +791,7 @@ def imap_inbox_list(config, limit=DEFAULT_LIST_LIMIT, client_factory=ImapClient)
     try:
         status, data = connection.select("INBOX", readonly=True)
         if status != "OK":
-            raise MailError("Saapuneet-kansiota ei voitu avata.")
+            raise MailError(_t("inbox_open_failed"))
         total = _as_int(data[0] if data else 0, 0)
         if total <= 0:
             return []
@@ -697,7 +802,7 @@ def imap_inbox_list(config, limit=DEFAULT_LIST_LIMIT, client_factory=ImapClient)
             % _HEADER_FIELDS,
         )
         if status != "OK":
-            raise MailError("Viestiluetteloa ei voitu lukea.")
+            raise MailError(_t("list_failed"))
         return parse_fetch_headers(data)
     finally:
         client.close(connection)
@@ -710,19 +815,19 @@ def imap_fetch_message(config, uid, client_factory=ImapClient):
     try:
         status, _data = connection.select("INBOX", readonly=True)
         if status != "OK":
-            raise MailError("Saapuneet-kansiota ei voitu avata.")
+            raise MailError(_t("inbox_open_failed"))
         status, data = connection.uid(
             "FETCH", str(uid), "(UID FLAGS BODY.PEEK[])"
         )
         if status != "OK":
-            raise MailError("Viestiä ei voitu hakea.")
+            raise MailError(_t("fetch_failed"))
         payload = None
         for item in data or []:
             if isinstance(item, tuple) and len(item) == 2:
                 payload = item[1]
                 break
         if payload is None:
-            raise MailError("Viestiä ei löytynyt Saapuneet-kansiosta.")
+            raise MailError(_t("message_missing_inbox"))
         message = email.message_from_bytes(payload)
         result = summarise(message)
         text = message_text(message)
@@ -847,7 +952,7 @@ def pop3_fetch_message(config, uid, client_factory=Pop3Client):
                 number = candidate
                 break
         if number is None:
-            raise MailError("Viestiä ei löytynyt postilaatikosta.")
+            raise MailError(_t("message_missing_mailbox"))
         _response, lines, _octets = connection.retr(number)
         message = email.message_from_bytes(b"\r\n".join(lines))
         result = summarise(message)
@@ -919,8 +1024,7 @@ def imap_delete_messages(config, uids, client_factory=ImapClient):
     try:
         status, _data = connection.select("INBOX")  # read-write, on purpose
         if status != "OK":
-            raise MailError("Saapuneet-kansiota ei voitu avata kirjoittamista "
-                            "varten.")
+            raise MailError(_t("inbox_open_write_failed"))
         deleted = []
         for uid in uids:
             status, _data = connection.uid(
@@ -930,7 +1034,7 @@ def imap_delete_messages(config, uids, client_factory=ImapClient):
                 deleted.append(str(uid))
         status, _data = connection.expunge()
         if status != "OK":
-            raise MailError("Viestien poistaminen palvelimelta epäonnistui.")
+            raise MailError(_t("delete_failed"))
         return deleted, []
     finally:
         client.close(connection)
@@ -953,8 +1057,7 @@ class SmtpClient(object):
             security = "ssl"
         port = _as_int(config.get("smtp_port"), default_smtp_port(security))
         if not host:
-            raise MailError("Lähettävää palvelinta ei ole asetettu. Avaa "
-                            "Asetukset.")
+            raise MailError(_t("smtp_not_configured"))
         try:
             if security == "ssl":
                 connection = smtplib.SMTP_SSL(
@@ -967,15 +1070,13 @@ class SmtpClient(object):
                     connection.starttls(context=self.ssl_context)
                     connection.ehlo()
         except socket.timeout:
-            raise MailError("Yhteys osoitteeseen %s:%s aikakatkaistiin."
-                            % (host, port))
+            raise MailError(_t("smtp_timeout", host=host, port=port))
         except ssl.SSLError as error:
-            raise MailError("Suojattu yhteys osoitteeseen %s:%s epäonnistui "
-                            "(%s)."
-                            % (host, port, error))
+            raise MailError(_t("smtp_tls_error", host=host, port=port,
+                               error=error))
         except (OSError, smtplib.SMTPException) as error:
-            raise MailError("Yhteys osoitteeseen %s:%s epäonnistui (%s)."
-                            % (host, port, error))
+            raise MailError(_t("smtp_connection_failed", host=host, port=port,
+                               error=error))
         try:
             connection.login(config.get("username") or "", config.get("password") or "")
         except smtplib.SMTPAuthenticationError as error:
@@ -989,11 +1090,8 @@ class SmtpClient(object):
                 connection.close()
             except Exception:  # noqa: BLE001
                 pass
-            raise MailError(
-                "Kirjautuminen epäonnistui. Tarkista käyttäjätunnus ja "
-                "salasana.\nPalvelin sanoi: %s"
-                % server_text(error)
-            )
+            raise MailError(_t("login_failed_server",
+                               server=server_text(error)))
         self.connection = connection
         return connection
 
@@ -1038,26 +1136,23 @@ def smtp_send(config, to, subject, body, in_reply_to=None, references=None,
               client_factory=SmtpClient):
     """Send one message. Raises MailError with a readable reason on failure."""
     if not (config.get("host") and config.get("username")):
-        raise MailError("Tiliä ei ole vielä määritetty. Avaa ensin Asetukset.")
+        raise MailError(_t("send_not_configured"))
     if not (to or "").strip():
-        raise MailError("Anna vastaanottajan osoite.")
+        raise MailError(_t("recipient_required"))
     if not config.get("password"):
-        raise MailError("Salasana puuttuu. Avaa Asetukset ja tallenna se.")
+        raise MailError(_t("password_missing"))
     message = build_message(config, to, subject, body, in_reply_to, references)
     client = client_factory(config)
     try:
         connection = client.connect()
         connection.send_message(message)
     except smtplib.SMTPRecipientsRefused as error:
-        raise MailError("Palvelin hylkäsi vastaanottajan osoitteen: %s"
-                        % ", ".join(sorted(error.recipients.keys())))
+        raise MailError(_t("recipient_rejected",
+                           addresses=", ".join(sorted(error.recipients.keys()))))
     except smtplib.SMTPSenderRefused as error:
-        raise MailError("Palvelin hylkäsi lähettäjän osoitteen.\n"
-                        "Palvelin sanoi: %s"
-                        % server_text(error))
+        raise MailError(_t("sender_rejected", server=server_text(error)))
     except smtplib.SMTPException as error:
-        raise MailError("Palvelin hylkäsi viestin.\nPalvelin sanoi: %s"
-                        % server_text(error))
+        raise MailError(_t("message_rejected", server=server_text(error)))
     finally:
         client.close()
     return message
@@ -1102,7 +1197,7 @@ class Mail(object):
         try:
             save_config_dict(config)
         except OSError as error:
-            message = "Asetuksia ei voitu tallentaa: %s" % error
+            message = _t("settings_save_failed", error=error)
             pyotherside.send("error", message)
             return {"ok": False, "error": message}
         visible = public_config(config)
@@ -1123,8 +1218,9 @@ class Mail(object):
             pyotherside.send("error", str(error))
             return {"ok": False, "error": str(error)}
         except Exception as error:  # never let a traceback reach QML
-            pyotherside.send("error", "Odottamaton virhe: %s" % error)
-            return {"ok": False, "error": str(error)}
+            message = _t("unexpected_error", error=error)
+            pyotherside.send("error", message)
+            return {"ok": False, "error": message}
         finally:
             pyotherside.send("busy", False)
         pyotherside.send("messageList", messages)
@@ -1142,8 +1238,9 @@ class Mail(object):
             pyotherside.send("error", str(error))
             return {"ok": False, "error": str(error)}
         except Exception as error:
-            pyotherside.send("error", "Odottamaton virhe: %s" % error)
-            return {"ok": False, "error": str(error)}
+            message = _t("unexpected_error", error=error)
+            pyotherside.send("error", message)
+            return {"ok": False, "error": message}
         finally:
             pyotherside.send("busy", False)
         pyotherside.send("messageBody", message)
@@ -1161,11 +1258,11 @@ class Mail(object):
         """Move a message into the app's own trash; the mailbox is untouched."""
         entry = dict(message) if isinstance(message, dict) else {"uid": message}
         if entry.get("uid") in (None, ""):
-            return {"ok": False, "error": "Viestillä ei ole tunnistetta."}
+            return {"ok": False, "error": _t("trash_no_uid")}
         try:
             entries = move_to_trash(entry)
         except OSError as error:
-            text = "Roskakoria ei voitu tallentaa: %s" % error
+            text = _t("trash_save_failed", error=error)
             pyotherside.send("error", text)
             return {"ok": False, "error": text}
         pyotherside.send("trashed", entry.get("uid"))
@@ -1176,7 +1273,7 @@ class Mail(object):
         try:
             entries = restore_from_trash(uid)
         except OSError as error:
-            text = "Roskakoria ei voitu tallentaa: %s" % error
+            text = _t("trash_save_failed", error=error)
             pyotherside.send("error", text)
             return {"ok": False, "error": text}
         pyotherside.send("restored", uid)
@@ -1204,7 +1301,7 @@ class Mail(object):
             pyotherside.send("error", str(error))
             return {"ok": False, "error": str(error), "messages": entries}
         except Exception as error:  # never let a traceback reach QML
-            text = "Odottamaton virhe: %s" % error
+            text = _t("unexpected_error", error=error)
             pyotherside.send("error", text)
             return {"ok": False, "error": text, "messages": entries}
         finally:
@@ -1216,8 +1313,7 @@ class Mail(object):
         try:
             save_trash(left)
         except OSError as error:
-            text = "Viestit poistettiin, mutta roskakoria ei voitu " \
-                   "päivittää: %s" % error
+            text = _t("trash_update_failed", error=error)
             pyotherside.send("error", text)
             return {"ok": False, "error": text, "messages": entries}
         pyotherside.send("trashEmptied", {"deleted": len(deleted)})
@@ -1234,8 +1330,9 @@ class Mail(object):
             pyotherside.send("error", str(error))
             return {"ok": False, "error": str(error)}
         except Exception as error:  # never let a traceback reach QML
-            pyotherside.send("error", "Odottamaton virhe: %s" % error)
-            return {"ok": False, "error": str(error)}
+            message = _t("unexpected_error", error=error)
+            pyotherside.send("error", message)
+            return {"ok": False, "error": message}
         finally:
             pyotherside.send("busy", False)
         pyotherside.send("sent", {"to": to, "subject": subject})
