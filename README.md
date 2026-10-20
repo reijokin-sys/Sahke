@@ -13,6 +13,8 @@ available in English (default) and Finnish, selected in Settings.
   messages on the server only after a confirmation
 - two Revontuli themes (red and green), selected in Settings
 - English and Finnish UI, including dialogs and error messages
+- Sign out removes the local account, stored password and trash while keeping
+  the language and theme; messages on the server are untouched
 
 ## Requirements
 
@@ -26,7 +28,7 @@ sudo apt install click python3
 ./tools/build.sh
 ```
 
-The package is written to `dist/fi.reijo.sahkoposti_0.4.0_all.click`.
+The package is written to `dist/fi.reijo.sahkoposti_0.5.0_all.click`.
 The build script uses the unpacked `click` tool from the Ubuntu archive if
 the system does not have one.
 
@@ -34,7 +36,7 @@ the system does not have one.
 
 ```sh
 click install --user phablet --allow-unauthenticated \
-  dist/fi.reijo.sahkoposti_0.4.0_all.click
+  dist/fi.reijo.sahkoposti_0.5.0_all.click
 ```
 
 The app is installed for the `phablet` user, like other Ubuntu Touch clicks.
@@ -49,6 +51,9 @@ because a confined click cannot use the desktop keyring on this Ubuntu Touch
 version. The password is never sent anywhere except to the configured mail
 server. The local trash contains only message metadata and stays on the
 device; deleting a message there does not change the server.
+
+Sign out removes the account settings, stored password and local trash from
+the device. It does not delete messages or settings on the mail server.
 
 ## Limitations
 

@@ -91,6 +91,7 @@ MESSAGES = {
         "trash_no_uid": "The message has no identifier.",
         "trash_save_failed": "The trash could not be saved: %(error)s",
         "trash_update_failed": "The messages were deleted, but the trash could not be updated: %(error)s",
+        "logout_failed": "Could not sign out: %(error)s",
     },
     "fi": {
         "not_configured": "Tiliä ei ole vielä määritetty. Avaa Asetukset ja täytä palvelimen tiedot.",
@@ -121,6 +122,7 @@ MESSAGES = {
         "trash_no_uid": "Viestillä ei ole tunnistetta.",
         "trash_save_failed": "Roskakoria ei voitu tallentaa: %(error)s",
         "trash_update_failed": "Viestit poistettiin, mutta roskakoria ei voitu päivittää: %(error)s",
+        "logout_failed": "Uloskirjautuminen ei onnistunut: %(error)s",
     },
 }
 
@@ -1204,6 +1206,37 @@ class Mail(object):
         pyotherside.send("config", visible)
         return {"ok": True, "config": visible}
 
+    def logout(self):
+        """Remove the local account and trash; keep UI preferences."""
+        config = self.config if self.config else load_config_dict()
+        username = (config.get("username") or "").strip()
+        try:
+            if username:
+                # Best effort: the keyring is normally unreachable from the
+                # confined click, but a future daemon/profile may make it
+                # reachable.
+                credentials.forget(username)
+            for path in (
+                config_path(),
+                trash_path(),
+                config_path() + ".tmp",
+                trash_path() + ".tmp",
+            ):
+                try:
+                    os.remove(path)
+                except FileNotFoundError:
+                    pass
+        except OSError as error:
+            message = _t("logout_failed", error=error)
+            pyotherside.send("error", message)
+            return {"ok": False, "error": message}
+        self.config = {}
+        visible = public_config({})
+        pyotherside.send("config", visible)
+        pyotherside.send("trashList", [])
+        pyotherside.send("loggedOut", True)
+        return {"ok": True}
+
     # -- mail -------------------------------------------------------------
 
     def list_inbox(self, limit=DEFAULT_LIST_LIMIT):
@@ -1374,6 +1407,10 @@ def restore_message(uid):
 
 def empty_trash():
     return _BACKEND.empty_trash()
+
+
+def logout():
+    return _BACKEND.logout()
 
 
 def send_message(to, subject, body, in_reply_to=None):

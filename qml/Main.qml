@@ -274,6 +274,30 @@ MainView {
         PopupUtils.open(emptyTrashDialog, root, { count: trashModel.count })
     }
 
+    function askLogout() {
+        PopupUtils.open(logoutDialog, root)
+    }
+
+    function logout() {
+        if (!root.pythonReady)
+            return
+        root.busy = true
+        python.call("mail.logout", [], function (result) {
+            root.busy = false
+            if (result && result.ok) {
+                messageModel.clear()
+                trashModel.clear()
+                root.listLimit = 50
+                root.shownCount = 0
+                root.applyConfig({})
+                if (pageStack.depth > 1)
+                    pageStack.pop()
+                root.notice = root.tr("notice.signedOut")
+                noticeTimer.restart()
+            }
+        })
+    }
+
     // The one action in this app that changes the mailbox: it is asked for
     // separately, and the dialog says what it cannot undo.
     function emptyTrash() {
@@ -496,6 +520,7 @@ MainView {
             themeKey: root.themeKey
             onLanguageRequested: root.setLanguage(code)
             onThemeRequested: root.setTheme(key)
+            onLogoutRequested: root.askLogout()
             onSaveRequested: root.saveSettings(host, port, security, username,
                                                password, protocol, smtpHost,
                                                smtpPort, smtpSecurity)
@@ -563,6 +588,30 @@ MainView {
                 onClicked: {
                     PopupUtils.close(dialog)
                     root.emptyTrash()
+                }
+            }
+        }
+    }
+
+    Component {
+        id: logoutDialog
+        Dialog {
+            id: dialog
+            title: root.tr("dialog.logout.title")
+            text: root.tr("dialog.logout.text")
+
+            Button {
+                text: root.tr("dialog.logout.cancel")
+                font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
+                onClicked: PopupUtils.close(dialog)
+            }
+            Button {
+                text: root.tr("dialog.logout.confirm")
+                color: theme.palette.normal.negative
+                font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
+                onClicked: {
+                    PopupUtils.close(dialog)
+                    root.logout()
                 }
             }
         }

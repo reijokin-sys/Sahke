@@ -25,6 +25,7 @@ Page {
                          var smtpPort, var smtpSecurity)
     signal languageRequested(string code)
     signal themeRequested(string key)
+    signal logoutRequested()
 
     function tr(key) {
         return I18n.t(language, key)
@@ -334,6 +335,21 @@ Page {
                          ? page.tr("settings.footer.keyring")
                          : page.tr("settings.footer.file"))
                       + page.tr("settings.footer.end")
+            }
+
+            Item {
+                width: parent.width
+                height: visible ? logoutButton.height : 0
+                visible: page.config && page.config.configured === true
+
+                Button {
+                    id: logoutButton
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: page.tr("settings.logout")
+                    color: theme.palette.normal.negative
+                    font.pixelSize: Fonts.bigger(FontUtils.sizeToPixels("medium"))
+                    onClicked: page.logoutRequested()
+                }
             }
         }
     }
