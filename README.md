@@ -29,7 +29,7 @@ sudo apt install click python3
 ./tools/build.sh
 ```
 
-The package is written to `dist/fi.reijo.sahkoposti_0.5.3_all.click`.
+The package is written to `dist/fi.reijo.sahkoposti_0.5.4_all.click`.
 The build script uses the unpacked `click` tool from the Ubuntu archive if
 the system does not have one.
 
@@ -37,7 +37,7 @@ the system does not have one.
 
 ```sh
 click install --user phablet --allow-unauthenticated \
-  dist/fi.reijo.sahkoposti_0.5.3_all.click
+  dist/fi.reijo.sahkoposti_0.5.4_all.click
 ```
 
 The app is installed for the `phablet` user, like other Ubuntu Touch clicks.
