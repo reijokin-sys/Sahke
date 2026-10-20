@@ -10,7 +10,7 @@ Comment=Sähköpostisovellus Ubuntu Touchille
 Exec=qmlscene %U qml/Main.qml
 Icon=assets/sahkoposti.png
 X-Ubuntu-Touch=true
-# The red theme's background, because red is the default. The theme choice
-# is known only to the app, not to the shell that draws the splash window;
-# a green-theme user sees this colour for a moment.
-X-Ubuntu-Splash-Color=#3F1714
+# The blue-black theme's background, because blue-black is the default. The
+# theme choice is known only to the app, not to the shell that draws the
+# splash window.
+X-Ubuntu-Splash-Color=#000000

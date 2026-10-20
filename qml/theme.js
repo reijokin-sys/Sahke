@@ -10,7 +10,7 @@
 /*
  * Sähke's own themes.
  *
- * The app does not follow the phone's theme: it picks one of its own two
+ * The app does not follow the phone's theme: it picks one of its own three
  * modules (`Lomiri.Components.Themes.Sahkoposti*`) and the choice is the
  * user's (Settings). The modules ship inside the click, so the app looks the
  * same on every phone. This is the same mechanism and the same Revontuli
@@ -21,16 +21,12 @@
  * first page is drawn and writes it when it changes.
  */
 
-var DEFAULT_KEY = "punainen"
-
-/// Brand colours shared with Puhuri: the header stays lilac with green text
-/// and icons in both themes. They are the app's own colours, not the theme's.
-var BRAND_GREEN = "#7EE081"
-var BRAND_LILAC = "#452F63"
+var DEFAULT_KEY = "sininen"
 
 var THEMES = [
     { key: "punainen", module: "Lomiri.Components.Themes.SahkopostiPunainen" },
-    { key: "vihrea", module: "Lomiri.Components.Themes.SahkopostiVihrea" }
+    { key: "vihrea", module: "Lomiri.Components.Themes.SahkopostiVihrea" },
+    { key: "sininen", module: "Lomiri.Components.Themes.SahkopostiSininen" }
 ]
 
 /// The module that belongs to one choice. An unknown key falls back to the

@@ -7,15 +7,11 @@
 
 import QtQuick 2.7
 import Lomiri.Components 1.3
-import "theme.js" as Themejs
 
 /*!
-  The app's header: the toolkit's PageHeader with Sähke's own colours.
-
-  The background is the brand lilac and the title, back arrow and action
-  icons are the brand green, in both themes. This is the same header
-  treatment Puhuri uses; the colours are the app's identity, not part of the
-  selectable theme.
+  The app's header: the toolkit's PageHeader with the selected theme's colours.
+  The background is the theme's base surface and its title, back arrow and
+  action icons use the matching text colour.
 
   The action-button delegate is set here so every page gets the bigger green
   icons without repeating the component.
@@ -24,9 +20,9 @@ PageHeader {
     id: header
 
     StyleHints {
-        backgroundColor: Themejs.BRAND_LILAC
-        foregroundColor: Themejs.BRAND_GREEN
-        dividerColor: Themejs.BRAND_LILAC
+        backgroundColor: theme.palette.normal.base
+        foregroundColor: theme.palette.normal.baseText
+        dividerColor: theme.palette.normal.base
     }
 
     Component {

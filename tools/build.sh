@@ -46,9 +46,15 @@ chmod -R u=rwX,go=rX "$stage"
 cd "$work"
 "$CLICK" build --no-validate "$stage"
 
-rm -rf "$PROJECT/dist"
 mkdir -p "$PROJECT/dist"
-mv "$work"/*.click "$PROJECT/dist/"
+for package in "$work"/*.click; do
+    target="$PROJECT/dist/$(basename "$package")"
+    [ ! -e "$target" ] || {
+        echo "Kohdepaketti on jo olemassa, en korvaa sitä: $target" >&2
+        exit 1
+    }
+    mv "$package" "$target"
+done
 
 echo "--- built:"
 ls -l "$PROJECT/dist/"

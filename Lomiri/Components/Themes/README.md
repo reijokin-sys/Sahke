@@ -1,12 +1,13 @@
 # Sähke's theme modules
 
-This directory contains the three theme modules shipped with Sähke:
+This directory contains the four theme modules shipped with Sähke:
 
 | Directory | Theme |
 | --- | --- |
 | `SahkopostiPunainen/` | Revontuli red (default) |
 | `SahkopostiVihrea/` | Revontuli green |
-| `SahkopostiPerus/` | base theme the two variants build on |
+| `SahkopostiSininen/` | Revontuli blue-black |
+| `SahkopostiPerus/` | base theme the three variants build on |
 
 The QML files are derivatives of **Canonical Ltd.'s Lomiri theme files**.
 They keep Canonical's copyright and licence notice, carry an SPDX line and

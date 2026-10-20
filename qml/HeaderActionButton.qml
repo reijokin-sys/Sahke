@@ -7,15 +7,13 @@
 
 import QtQuick 2.7
 import Lomiri.Components 1.3
-import "theme.js" as Themejs
 
 /*!
   The button an ActionBar draws an action with.
 
   The toolkit's own button gives the icon `units.gu(2)` and the theme's
-  foreground colour. The header has Sähke's lilac background in both
-  themes, so the icon is the brand green and slightly larger, the same way
-  Puhuri's header buttons are.
+  foreground colour. The header uses the theme's base surface, so the icon is
+  slightly larger and uses the matching base text colour.
  */
 AbstractButton {
     id: button
@@ -35,7 +33,7 @@ AbstractButton {
         height: width
         source: button.iconSource
         name: button.action && button.action.iconName ? button.action.iconName : ""
-        color: Themejs.BRAND_GREEN
+        color: theme.palette.normal.baseText
         opacity: button.enabled ? 1.0 : 0.4
     }
 }

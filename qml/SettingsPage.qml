@@ -17,8 +17,8 @@ Page {
 
     property string language: "en"
     property var config
-    /// "punainen" or "vihrea": Sähke's own theme, not the phone's.
-    property string themeKey: "punainen"
+    /// "punainen", "vihrea" or "sininen": Sähke's own theme, not the phone's.
+    property string themeKey: "sininen"
 
     signal saveRequested(var host, var port, var security, var username,
                          var password, var protocol, var smtpHost,
@@ -128,10 +128,13 @@ Page {
                 width: parent.width
                 expanded: false
                 model: [page.tr("settings.themeRed"),
-                        page.tr("settings.themeGreen")]
-                selectedIndex: page.themeKey === "vihrea" ? 1 : 0
+                        page.tr("settings.themeGreen"),
+                        page.tr("settings.themeBlue")]
+                selectedIndex: page.themeKey === "vihrea" ? 1
+                               : page.themeKey === "sininen" ? 2 : 0
                 onSelectedIndexChanged: {
-                    var key = selectedIndex === 1 ? "vihrea" : "punainen"
+                    var keys = ["punainen", "vihrea", "sininen"]
+                    var key = keys[selectedIndex] || "punainen"
                     if (key !== page.themeKey)
                         page.themeRequested(key)
                 }

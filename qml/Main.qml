@@ -28,9 +28,9 @@ MainView {
     property bool pythonReady: false
     property string language: "en"
     property bool configured: false
-    // The theme the user chose: "punainen" or "vihrea". Sähke has its
-    // own two themes and does not follow the phone's.
-    property string themeKey: "punainen"
+    // The theme the user chose: "punainen", "vihrea" or "sininen". Sähke has
+    // its own three themes and does not follow the phone's.
+    property string themeKey: "sininen"
     property var account: ({})
     // A short confirmation shown at the bottom ("Message sent.").
     property string notice: ""
@@ -437,7 +437,7 @@ MainView {
     Settings {
         id: themeSettings
         fileName: "/home/phablet/.config/fi.reijo.sahkoposti/theme.conf"
-        property string theme: "punainen"
+        property string theme: "sininen"
     }
 
     QtObject {
