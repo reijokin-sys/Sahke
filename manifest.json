@@ -1,0 +1,16 @@
+{
+    "name": "fi.reijo.sahkoposti",
+    "title": "Sähke",
+    "version": "0.3.2",
+    "description": "Sähköpostisovellus Ubuntu Touchille - POP3/IMAP, lähetys, paikallinen roskakori",
+    "maintainer": "Reijo Kinnunen",
+    "framework": "ubuntu-touch-24.04-2.x",
+    "architecture": "all",
+    "icon": "assets/sahkoposti.png",
+    "hooks": {
+        "sahkoposti": {
+            "apparmor": "fi.reijo.sahkoposti.apparmor",
+            "desktop": "sahkoposti.desktop"
+        }
+    }
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Sähke app icon - Copyright (C) 2026 Reijo Kinnunen - GPL-3.0-or-later
+     The same drawing as tools/make-icon.py produces: an envelope in the
+     accent green on purple, drawn in one heavy line weight. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"
+     viewBox="0 0 256 256">
+  <rect x="0" y="0" width="256" height="256" rx="56" ry="56" fill="#77216F"/>
+  <rect x="46" y="70" width="164" height="116" rx="16" ry="16"
+        fill="none" stroke="#3EB34F" stroke-width="20"/>
+  <path d="M60 84 L128 142 L196 84" fill="none" stroke="#3EB34F"
+        stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
